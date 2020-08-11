@@ -81,12 +81,12 @@ type Profile struct {
 func (p *Profile) SetupWireguard(device *device.Device, WGInterface string) {
 	err := exec.Command("ip", "address", "add", "dev", WGInterface, fmt.Sprintf("%s/%d", p.WireguardIP, p.WireguardNetmask)).Run()
 	sharedutils.CheckError(err)
-	err = exec.Command("ip", "link", "set", "wg0", "up").Run()
+	err = exec.Command("ip", "link", "set", WGInterface, "up").Run()
 	sharedutils.CheckError(err)
 
 	SetConfig(device, "listen_port", fmt.Sprintf("%d", localWGPort))
 	SetConfig(device, "private_key", keyToHex(p.PrivateKey))
-	SetConfig(device, "persistent_keepalive_interval", "5")
+
 }
 
 func (p *Profile) FillProfileFromServer() {

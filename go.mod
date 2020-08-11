@@ -8,6 +8,7 @@ require (
 	github.com/inverse-inc/packetfence v10.1.1-0.20200805163627-58ba8952580c+incompatible // indirect
 	github.com/inverse-inc/packetfence/go v0.0.0-20200731140631-b1bdb703c276
 	github.com/jcuga/golongpoll v1.1.1-0.20200305163037-04fafece69ca
+	github.com/scottjg/upnp v0.0.0-20161226025956-82caf20da2dd // indirect
 	golang.org/x/crypto v0.0.0-20200429183012-4b2356b1ed79
 	golang.org/x/net v0.0.0-20200501053045-e0ff5e5a1de5
 	golang.org/x/sys v0.0.0-20200501145240-bc7a7d42d5c3

@@ -237,6 +237,8 @@ github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6So
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
 github.com/savsgio/gotils v0.0.0-20200117113501-90175b0fbe3f/go.mod h1:lHhJedqxCoHN+zMtwGNTXWmF0u9Jt363FYRhV6g0CdY=
+github.com/scottjg/upnp v0.0.0-20161226025956-82caf20da2dd h1:kcen6KQmsoz9ZiOjxfR1uoDwBbBV4dhH1yEu0k5LMZU=
+github.com/scottjg/upnp v0.0.0-20161226025956-82caf20da2dd/go.mod h1:l168au4IoTMJEcotw+BRMFTQDyLfnBD/KyUwJbPTMWs=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/simon/go-netadv v0.0.0-20170602081515-fe67988531c7/go.mod h1:zYcHHOGF82GbP6dQsD36WjdqjmocfszWV36D1xwwZgw=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
@@ -362,6 +364,7 @@ google.golang.org/grpc v1.19.0/go.mod h1:mqu4LbDTu4XGKhr4mRzUsmM4RtVoemTSY81AxZi
 google.golang.org/grpc v1.22.1/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyacEbxg=
 gopkg.in/alecthomas/kingpin.v2 v2.2.6/go.mod h1:FMv+mEhP44yOT+4EoQTLFTRgOQ1FBLkstjWtayDeSgw=
 gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc/go.mod h1:m7x9LTH6d71AHyAX77c9yqWCCa3UKHcVEj9y7hAtKDk=
+gopkg.in/alexcesaro/statsd.v2 v2.0.0-20160320182110-7fea3f0d2fab h1:RgiITNDi6nVbNT243AK5BiLZux9Zhlwto+gOOiQPu7I=
 gopkg.in/alexcesaro/statsd.v2 v2.0.0-20160320182110-7fea3f0d2fab/go.mod h1:i0ubccKGzBVNBpdGV5MocxyA/XlLUJzA7SLonnE4drU=
 gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d/go.mod h1:cuepJuh7vyXfUyUwEgHQXw849cJrilpS5NeIjOWESAw=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
