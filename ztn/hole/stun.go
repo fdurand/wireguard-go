@@ -28,13 +28,14 @@ type STUN struct {
 	ExternConn *ExternalConnection
 }
 
-//NewSTUN
+//NewSTUN init
 func NewSTUN(context context.Context) (Method, error) {
 	method := STUN{}
 	method.Init(context)
 	return &method, nil
 }
 
+// Init function
 func (hole *STUN) Init(context context.Context) {
 	log.SetProcessName("wireguard-go")
 	ctx := log.LoggerNewContext(context)
@@ -45,10 +46,12 @@ func (hole *STUN) Init(context context.Context) {
 	hole.ExternConn = d
 }
 
-func (hole *STUN) GetExternalInfo() (error, net.UDPAddr) {
+// GetExternalInfo function
+func (hole *STUN) GetExternalInfo() (net.UDPAddr, error) {
 
 }
 
+// Run function
 func (hole *STUN) Run(pc *ztn.PeerConnection) {
 	var err error
 	pc.wgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: ztn.localWGIP, Port: ztn.localWGPort})

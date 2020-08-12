@@ -20,12 +20,14 @@ type UPnPGID struct {
 	ExternConn *ExternalConnection
 }
 
+// CheckNet search for a gateway
 func CheckNet() error {
 	err := mapping.SearchGateway()
 	return err
 }
 
-func ExternalIPAddr() (error, net.IP) {
+// ExternalIPAddr return the WAN ip
+func ExternalIPAddr() (net.IP, error) {
 	err := mapping.ExternalIPAddr()
 	if err != nil {
 		return err, nil
@@ -34,13 +36,14 @@ func ExternalIPAddr() (error, net.IP) {
 
 }
 
-// NewUPnPGID
+// NewUPnPGID Init
 func NewUPnPGID(context context.Context) (Method, error) {
 	method := UPnPGID{}
 	method.Init(context)
 	return &method, nil
 }
 
+// Init initialyse
 func (hole *UPnPGID) Init(context context.Context) {
 	log.SetProcessName("wireguard-go")
 	ctx := log.LoggerNewContext(context)
@@ -51,16 +54,17 @@ func (hole *UPnPGID) Init(context context.Context) {
 	hole.ExternConn = d
 }
 
-func (hole *UPnPGID) GetExternalInfo() (error, net.UDPAddr) {
+// GetExternalInfo fetch wan information
+func (hole *UPnPGID) GetExternalInfo() (net.UDPAddr, error) {
 	var UDP net.UDPAddr
 	err := CheckNet()
 	var UDPAddr net.UDPAddr
 
 	if err != nil {
-		return errors.New("Your router does not support the UPnP protocol."), UDP
+		return UDP, errors.New("your router does not support the UPnP protocol.")
 	}
 
-	err, myExternalIP := ExternalIPAddr()
+	myExternalIP, err := ExternalIPAddr()
 	if err != nil {
 		return err, UDPAddr
 	}
@@ -70,20 +74,22 @@ func (hole *UPnPGID) GetExternalInfo() (error, net.UDPAddr) {
 	return nil, hole.ExternConn.extAddr
 }
 
+// AddPortMapping insert port mapping in the gateway
 func AddPortMapping(localPort, remotePort int) bool {
 	if err := mapping.AddPortMapping(localPort, remotePort, 60, "UDP", "WireguardGO"); err == nil {
 		fmt.Println("Port mapped successfully")
 		return true
-	} else {
-		fmt.Println("Port failed to map")
-		return false
 	}
+	fmt.Println("Port failed to map")
+	return false
 }
 
+// DelPortMapping delete port mapping in the gateway
 func DelPortMapping(localPort, remotePort int) {
 	mapping.DelPortMapping(remotePort, "UDP")
 }
 
+// Run execute the Method
 func (hole *UPnPGID) Run() {
 
 }
