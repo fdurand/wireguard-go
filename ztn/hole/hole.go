@@ -10,14 +10,17 @@ var localWGIP = net.ParseIP("127.0.0.1")
 
 const localWGPort = 6969
 
+// ExternalConnection struct
 type ExternalConnection struct {
 	extAddr *net.UDPAddr
 	ctx     context.Context
 }
 
+// Method interface
 type Method interface {
 	GetExternalInfo(ctx context.Context) (error, net.UDPAddr)
 	Run()
+	Init(context context.Context)
 }
 
 // Creater function

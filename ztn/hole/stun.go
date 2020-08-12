@@ -25,24 +25,24 @@ type pkt struct {
 
 // STUN struct
 type STUN struct {
-	ExternalConnection *ExternalConnection
+	ExternConn *ExternalConnection
 }
 
-// NewSTUN
+//NewSTUN
 func NewSTUN(context context.Context) (Method, error) {
 	method := STUN{}
-	method.STUN(context)
+	method.Init(context)
 	return &method, nil
 }
 
-func (hole *STUN) STUN(context context.Context) {
+func (hole *STUN) Init(context context.Context) {
 	log.SetProcessName("wireguard-go")
 	ctx := log.LoggerNewContext(context)
-	d := &ExternalConnection{
+	d := &ExternConnection{
 		extAddr: nil,
 		ctx:     ctx,
 	}
-	hole.ExternalConnection = d
+	hole.ExternConn = d
 }
 
 func (hole *STUN) GetExternalInfo() (error, net.UDPAddr) {
