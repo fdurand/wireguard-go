@@ -28,7 +28,7 @@ type Creater func(context.Context) (Method, error)
 
 var methodLookup = map[string]Creater{
 	"stun":    NewSTUN,
-	"upnpigd": NewUPnPGID,
+	"upnpgid": NewUPnPGID,
 }
 
 // Create function

@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/inverse-inc/packetfence/go/sharedutils"
 	"golang.zx2c4.com/wireguard/device"
+	"golang.zx2c4.com/wireguard/ztn/hole"
 	"gortc.io/stun"
 )
 
@@ -60,6 +61,8 @@ func NewPeerConnection(d *device.Device, logger *device.Logger, myProfile Profil
 
 func (pc *PeerConnection) Start() {
 	for {
+		Method := hole.Create(ctx, "upnpgid")
+		Method.Run()
 		pc.run()
 		pc.reset()
 		pc.logger.Error.Println("Lost connection with", pc.peerID, ". Reconnecting")
