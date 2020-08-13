@@ -8,7 +8,7 @@ package device
 import (
 	"sync/atomic"
 
-	"golang.zx2c4.com/wireguard/tun"
+	"github.com/fdurand/wireguard-go/tun"
 )
 
 const DefaultMTU = 1420

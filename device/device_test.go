@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"golang.zx2c4.com/wireguard/tun/tuntest"
+	"github.com/fdurand/wireguard-go/tun/tuntest"
 )
 
 func TestTwoDevicePing(t *testing.T) {

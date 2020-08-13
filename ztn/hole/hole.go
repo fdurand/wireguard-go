@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+
+	"github.com/fdurand/wireguard-go/ztn/peerconnection"
 )
 
 var localWGIP = net.ParseIP("127.0.0.1")
@@ -18,8 +20,8 @@ type ExternalConnection struct {
 
 // Method interface
 type Method interface {
-	GetExternalInfo(ctx context.Context) (error, net.UDPAddr)
-	Run()
+	GetExternalInfo(ctx context.Context) (net.UDPAddr, error)
+	Run(pc *peerconnection.PeerConnection)
 	Init(context context.Context)
 }
 

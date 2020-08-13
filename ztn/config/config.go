@@ -1,11 +1,11 @@
-package ztn
+package config
 
 import (
 	"bufio"
 	"bytes"
 	"fmt"
 
-	"golang.zx2c4.com/wireguard/device"
+	"github.com/fdurand/wireguard-go/device"
 )
 
 func SetConfig(device *device.Device, k, v string) {

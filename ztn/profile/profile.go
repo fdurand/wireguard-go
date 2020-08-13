@@ -1,4 +1,4 @@
-package ztn
+package profile
 
 import (
 	"encoding/base64"

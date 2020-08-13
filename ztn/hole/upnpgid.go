@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/fdurand/wireguard-go/ztn/peerconnection"
 	"github.com/inverse-inc/packetfence/go/log"
 	"github.com/scottjg/upnp"
 )
@@ -30,9 +31,9 @@ func CheckNet() error {
 func ExternalIPAddr() (net.IP, error) {
 	err := mapping.ExternalIPAddr()
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
-	return nil, net.ParseIP(mapping.GatewayOutsideIP)
+	return net.ParseIP(mapping.GatewayOutsideIP), nil
 
 }
 
@@ -55,7 +56,7 @@ func (hole *UPnPGID) Init(context context.Context) {
 }
 
 // GetExternalInfo fetch wan information
-func (hole *UPnPGID) GetExternalInfo() (net.UDPAddr, error) {
+func (hole *UPnPGID) GetExternalInfo(context context.Context) (net.UDPAddr, error) {
 	var UDP net.UDPAddr
 	err := CheckNet()
 	var UDPAddr net.UDPAddr
@@ -66,12 +67,12 @@ func (hole *UPnPGID) GetExternalInfo() (net.UDPAddr, error) {
 
 	myExternalIP, err := ExternalIPAddr()
 	if err != nil {
-		return err, UDPAddr
+		return UDPAddr, err
 	}
 	hole.ExternConn.extAddr.IP = myExternalIP
 	hole.ExternConn.extAddr.Port = remotePort
 	AddPortMapping(localPort, remotePort)
-	return nil, hole.ExternConn.extAddr
+	return hole.ExternConn.extAddr, nil
 }
 
 // AddPortMapping insert port mapping in the gateway
@@ -90,6 +91,6 @@ func DelPortMapping(localPort, remotePort int) {
 }
 
 // Run execute the Method
-func (hole *UPnPGID) Run() {
+func (hole *UPnPGID) Run(pc *peerconnection.PeerConnection) {
 
 }

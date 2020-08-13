@@ -20,12 +20,15 @@ import (
 	"syscall"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/fdurand/wireguard-go/device"
+	"github.com/fdurand/wireguard-go/ipc"
+	"github.com/fdurand/wireguard-go/tun"
+	"github.com/fdurand/wireguard-go/ztn"
+	"github.com/fdurand/wireguard-go/ztn/api"
+	"github.com/fdurand/wireguard-go/ztn/peerconnection"
+	"github.com/fdurand/wireguard-go/ztn/profile"
 	"github.com/inverse-inc/packetfence/go/remoteclients"
 	"github.com/inverse-inc/packetfence/go/sharedutils"
-	"golang.zx2c4.com/wireguard/device"
-	"golang.zx2c4.com/wireguard/ipc"
-	"golang.zx2c4.com/wireguard/tun"
-	"golang.zx2c4.com/wireguard/ztn"
 
 	"net/http"
 	_ "net/http/pprof"
@@ -266,7 +269,7 @@ func main() {
 
 	privateKey, publicKey := getKeys()
 
-	profile := ztn.Profile{
+	profile := profile.Profile{
 		PrivateKey: base64.StdEncoding.EncodeToString(privateKey[:]),
 		PublicKey:  base64.StdEncoding.EncodeToString(publicKey[:]),
 	}
@@ -346,7 +349,7 @@ func getKeys() ([32]byte, [32]byte) {
 	}
 }
 
-func listenEvents(device *device.Device, profile ztn.Profile) {
+func listenEvents(device *device.Device, profile profile.Profile) {
 	chal, err := ztn.GetServerChallenge(&profile)
 	sharedutils.CheckError(err)
 	priv, err := remoteclients.B64KeyToBytes(profile.PrivateKey)
@@ -357,12 +360,12 @@ func listenEvents(device *device.Device, profile ztn.Profile) {
 	sharedutils.CheckError(err)
 
 	myID := base64.URLEncoding.EncodeToString(pub[:])
-	c := ztn.GLPPrivateClient(priv, pub, serverPub)
+	c := api.GLPPrivateClient(priv, pub, serverPub)
 	c.Start()
 	for {
 		select {
 		case e := <-c.EventsChan:
-			event := ztn.Event{}
+			event := api.Event{}
 			err := json.Unmarshal(e.Data, &event)
 			sharedutils.CheckError(err)
 			if event.Type == "new_peer" && event.Data["id"].(string) != myID {
@@ -372,7 +375,7 @@ func listenEvents(device *device.Device, profile ztn.Profile) {
 	}
 }
 
-func startPeer(device *device.Device, profile ztn.Profile, peerID string) {
+func startPeer(device *device.Device, profile profile.Profile, peerID string) {
 	peerProfile, err := ztn.GetPeerProfile(peerID)
 	if err != nil {
 		logger.Error.Println("Unable to fetch profile for peer", peerID, ". Error:", err)
@@ -386,7 +389,7 @@ func startPeer(device *device.Device, profile ztn.Profile, peerID string) {
 							logger.Error.Println("Recovered error", r, "while handling peer", peerProfile.PublicKey, ". Will attempt to connect to it again.")
 						}
 					}()
-					pc := ztn.NewPeerConnection(device, logger, profile, peerProfile)
+					pc := peerconnection.NewPeerConnection(device, logger, profile, peerProfile)
 					pc.Start()
 				}()
 			}

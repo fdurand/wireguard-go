@@ -13,7 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"golang.zx2c4.com/wireguard/conn"
+	"github.com/fdurand/wireguard-go/conn"
 )
 
 const (
