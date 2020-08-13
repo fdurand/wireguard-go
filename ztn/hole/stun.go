@@ -31,11 +31,11 @@ type pkt struct {
 
 // STUN struct
 type STUN struct {
-	ExternConn *ExternalConnection
+	ConnectionPeer *ExternalConnection
 }
 
 //NewSTUN init
-func NewSTUN(context context.Context) (Method, error) {
+func NewSTUN(ctx context.Context, method string, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) (Method, error)
 	method := STUN{}
 	method.Init(context)
 	return &method, nil
@@ -61,7 +61,7 @@ func (hole *STUN) GetExternalInfo(context context.Context) (net.UDPAddr, error) 
 }
 
 // Run function
-func (hole *STUN) Run(pc *peerconnection.PeerConnection) {
+func (hole *STUN) Run() {
 	var err error
 	pc.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
 	sharedutils.CheckError(err)

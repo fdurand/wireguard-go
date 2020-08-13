@@ -18,7 +18,7 @@ var remotePort = 1990
 
 // UPnPGID struct
 type UPnPGID struct {
-	ExternConn *ExternalConnection
+	ConnectionPeer *ExternalConnection
 }
 
 // CheckNet search for a gateway
@@ -38,7 +38,7 @@ func ExternalIPAddr() (net.IP, error) {
 }
 
 // NewUPnPGID Init
-func NewUPnPGID(context context.Context) (Method, error) {
+func NewUPnPGID(ctx context.Context, method string, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) (Method, error)
 	method := UPnPGID{}
 	method.Init(context)
 	return &method, nil

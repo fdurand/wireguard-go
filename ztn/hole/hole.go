@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
-	"github.com/fdurand/wireguard-go/ztn/peerconnection"
+	"golang.zx2c4.com/wireguard/device"
 )
 
 var localWGIP = net.ParseIP("127.0.0.1")
@@ -14,14 +15,30 @@ const localWGPort = 6969
 
 // ExternalConnection struct
 type ExternalConnection struct {
-	extAddr *net.UDPAddr
-	ctx     context.Context
+	myID        string
+	PeerID      string
+	MyProfile   profile.Profile
+	PeerProfile profile.PeerProfile
+
+	WgConn        *net.UDPConn
+	LocalPeerConn *net.UDPConn
+	Device        *device.Device
+	Logger        *device.Logger
+
+	MyAddr   *net.UDPAddr
+	PeerAddr *net.UDPAddr
+
+	Started       bool
+	Connected     bool
+	LastKeepalive time.Time
+
+	TriedPrivate bool
 }
 
 // Method interface
 type Method interface {
 	GetExternalInfo(ctx context.Context) (net.UDPAddr, error)
-	Run(pc *peerconnection.PeerConnection)
+	Run()
 	Init(context context.Context)
 }
 
@@ -34,7 +51,7 @@ var methodLookup = map[string]Creater{
 }
 
 // Create function
-func Create(ctx context.Context, method string) (Method, error) {
+func Create(ctx context.Context, method string, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) (Method, error) {
 	if creater, found := methodLookup[method]; found {
 		return creater(ctx)
 	}

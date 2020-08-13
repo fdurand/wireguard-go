@@ -23,7 +23,6 @@ import (
 	"github.com/fdurand/wireguard-go/device"
 	"github.com/fdurand/wireguard-go/ipc"
 	"github.com/fdurand/wireguard-go/tun"
-	"github.com/fdurand/wireguard-go/ztn"
 	"github.com/fdurand/wireguard-go/ztn/api"
 	"github.com/fdurand/wireguard-go/ztn/peerconnection"
 	"github.com/fdurand/wireguard-go/ztn/profile"
