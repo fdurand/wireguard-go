@@ -329,24 +329,23 @@ func getKeys() ([32]byte, [32]byte) {
 		pub, err := remoteclients.B64KeyToBytes(auth.PublicKey)
 		sharedutils.CheckError(err)
 		return priv, pub
-	} else {
-		f, err := os.Create(authFile)
-		if err != nil {
-			panic("Unable to create " + authFile + ": " + err.Error())
-		}
-		defer f.Close()
-
-		priv, err := remoteclients.GeneratePrivateKey()
-		sharedutils.CheckError(err)
-		pub, err := remoteclients.GeneratePublicKey(priv)
-		sharedutils.CheckError(err)
-		auth.PrivateKey = base64.StdEncoding.EncodeToString(priv[:])
-		auth.PublicKey = base64.StdEncoding.EncodeToString(pub[:])
-		spew.Dump(auth)
-		err = json.NewEncoder(f).Encode(&auth)
-		sharedutils.CheckError(err)
-		return priv, pub
 	}
+	f, err := os.Create(authFile)
+	if err != nil {
+		panic("Unable to create " + authFile + ": " + err.Error())
+	}
+	defer f.Close()
+
+	priv, err := remoteclients.GeneratePrivateKey()
+	sharedutils.CheckError(err)
+	pub, err := remoteclients.GeneratePublicKey(priv)
+	sharedutils.CheckError(err)
+	auth.PrivateKey = base64.StdEncoding.EncodeToString(priv[:])
+	auth.PublicKey = base64.StdEncoding.EncodeToString(pub[:])
+	spew.Dump(auth)
+	err = json.NewEncoder(f).Encode(&auth)
+	sharedutils.CheckError(err)
+	return priv, pub
 }
 
 func listenEvents(device *device.Device, profile profile.Profile) {
