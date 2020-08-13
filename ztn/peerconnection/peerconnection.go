@@ -1,6 +1,7 @@
 package peerconnection
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"log"
@@ -11,6 +12,7 @@ import (
 	"github.com/fdurand/wireguard-go/device"
 	"github.com/fdurand/wireguard-go/ztn/api"
 	"github.com/fdurand/wireguard-go/ztn/bufferpool"
+	"github.com/fdurand/wireguard-go/ztn/hole"
 	"github.com/fdurand/wireguard-go/ztn/profile"
 	"github.com/gin-gonic/gin"
 	"github.com/inverse-inc/packetfence/go/sharedutils"
@@ -60,8 +62,12 @@ func NewPeerConnection(d *device.Device, logger *device.Logger, myProfile profil
 }
 
 func (pc *PeerConnection) Start() {
+	var ctx = context.Background()
 	for {
 		// loop on hole method
+		methodType := "stun"
+		method, err := hole.Create(ctx, methodType)
+		method.Run(pc)
 		// pc.run()
 		pc.reset()
 		pc.Logger.Error.Println("Lost connection with", pc.PeerID, ". Reconnecting")
