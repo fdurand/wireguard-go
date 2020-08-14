@@ -391,7 +391,8 @@ func startPeer(device *device.Device, prof profile.Profile, peerID string) {
 							logger.Error.Println("Recovered error", r, "while handling peer", peerProfile.PublicKey, ". Will attempt to connect to it again.")
 						}
 					}()
-					methodType := "stun"
+					// methodType := "stun"
+					methodType := "upnpgid"
 					method, _ := hole.Create(ctx, methodType, device, logger, prof, peerProfile)
 					method.Start()
 				}()

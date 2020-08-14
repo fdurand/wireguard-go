@@ -2,6 +2,7 @@ package hole
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
@@ -58,16 +59,8 @@ func (hole *STUN) init(context context.Context, d *device.Device, logger *device
 	hole.ConnectionPeer = e
 }
 
-// GetExternalInfo function
-func (hole *STUN) GetExternalInfo(context context.Context) (net.UDPAddr, error) {
-
-	var UDP net.UDPAddr
-	var err error
-	return UDP, err
-}
-
 // Run function
-func (hole *STUN) Run() {
+func (hole *STUN) Run() error {
 	var err error
 	hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
 	sharedutils.CheckError(err)
@@ -212,17 +205,19 @@ func (hole *STUN) Run() {
 			return true
 		}()
 		if !res {
-			return
+			return errors.New("Stun method error")
 		}
 	}
 }
 
-func (hole *STUN) Start() {
+func (hole *STUN) Start() error {
+	var err error
 	for {
-		hole.Run()
+		err = hole.Run()
 		hole.ConnectionPeer.reset()
 		hole.ConnectionPeer.Logger.Error.Println("Lost connection with", hole.ConnectionPeer.PeerID, ". Reconnecting")
 	}
+	return err
 }
 
 func (hole *STUN) GetPrivateAddr() string {

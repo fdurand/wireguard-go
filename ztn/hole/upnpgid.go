@@ -18,7 +18,6 @@ import (
 	"github.com/inverse-inc/packetfence/go/log"
 	"github.com/inverse-inc/packetfence/go/sharedutils"
 	"github.com/scottjg/upnp"
-	"gortc.io/stun"
 )
 
 var mapping = new(upnp.Upnp)
@@ -71,33 +70,33 @@ func (hole *UPnPGID) init(context context.Context, d *device.Device, logger *dev
 }
 
 // GetExternalInfo fetch wan information
-func (hole *UPnPGID) GetExternalInfo(context context.Context) (*net.UDPAddr, error) {
-	var UDP net.UDPAddr
+func (hole *UPnPGID) GetExternalInfo() error {
 	err := CheckNet()
-	var UDPAddr net.UDPAddr
-
 	if err != nil {
-		return &UDP, errors.New("your router does not support the UPnP protocol.")
+		return errors.New("your router does not support the UPnP protocol.")
 	}
 
 	myExternalIP, err := ExternalIPAddr()
 	if err != nil {
-		return &UDPAddr, err
+		return err
 	}
 	hole.ConnectionPeer.MyAddr.IP = myExternalIP
 	hole.ConnectionPeer.MyAddr.Port = remotePort
-	AddPortMapping(localPort, remotePort)
-	return hole.ConnectionPeer.MyAddr, nil
+	err = hole.AddPortMapping(localPort, remotePort)
+	if err != nil {
+		return errors.New("Fail to add the port mapping")
+	}
+	return nil
 }
 
 // AddPortMapping insert port mapping in the gateway
-func AddPortMapping(localPort, remotePort int) bool {
+func (hole *UPnPGID) AddPortMapping(localPort, remotePort int) error {
 	if err := mapping.AddPortMapping(localPort, remotePort, 60, "UDP", "WireguardGO"); err == nil {
 		fmt.Println("Port mapped successfully")
-		return true
+		hole.ConnectionPeer.Logger.Info.Print("Port mapped successfully")
+		return nil
 	}
-	fmt.Println("Port failed to map")
-	return false
+	return errors.New("Fail to add the port mapping")
 }
 
 // DelPortMapping delete port mapping in the gateway
@@ -106,20 +105,21 @@ func DelPortMapping(localPort, remotePort int) {
 }
 
 // Run execute the Method
-func (hole *UPnPGID) Start() {
+func (hole *UPnPGID) Start() error {
 	var err error
-	hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
-	sharedutils.CheckError(err)
+	err = hole.GetExternalInfo()
 
-	stunAddr, err := net.ResolveUDPAddr(udp, stunServer)
+	if err != nil {
+		return err
+	}
+
+	hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
 	sharedutils.CheckError(err)
 
 	hole.ConnectionPeer.LocalPeerConn, err = net.ListenUDP(udp, nil)
 	sharedutils.CheckError(err)
 
 	hole.ConnectionPeer.Logger.Debug.Printf("Listening on %s for peer %s\n", hole.ConnectionPeer.LocalPeerConn.LocalAddr(), hole.ConnectionPeer.PeerID)
-
-	var publicAddr stun.XORMappedAddress
 
 	messageChan := make(chan *pkt)
 	hole.ConnectionPeer.Listen(hole.ConnectionPeer.LocalPeerConn, messageChan)
@@ -152,41 +152,6 @@ func (hole *UPnPGID) Start() {
 				}
 
 				switch {
-				case stun.IsMessage(message.message):
-					m := new(stun.Message)
-					m.Raw = message.message
-					decErr := m.Decode()
-					if decErr != nil {
-						hole.ConnectionPeer.Logger.Error.Println("Unable to decode STUN message:", decErr)
-						break
-					}
-					var xorAddr stun.XORMappedAddress
-					if getErr := xorAddr.GetFrom(m); getErr != nil {
-						hole.ConnectionPeer.Logger.Error.Println("Unable to get STUN XOR address:", getErr)
-						break
-					}
-
-					if publicAddr.String() != xorAddr.String() {
-						hole.ConnectionPeer.Logger.Info.Printf("My public address for peer %s: %s\n", hole.ConnectionPeer.PeerID, xorAddr)
-						publicAddr = xorAddr
-						hole.ConnectionPeer.MyAddr, err = net.ResolveUDPAddr("udp4", xorAddr.String())
-						sharedutils.CheckError(err)
-
-						go func() {
-							for {
-								select {
-								case <-time.After(1 * time.Second):
-									hole.ConnectionPeer.Logger.Debug.Println("Publishing IP for discovery with peer", hole.ConnectionPeer.PeerID)
-									api.GLPPublish(hole.ConnectionPeer.BuildP2PKey(), hole.ConnectionPeer.BuildNetworkEndpointEvent(hole))
-								case <-foundPeer:
-									hole.ConnectionPeer.Logger.Info.Println("Found peer", hole.ConnectionPeer.PeerID, ", stopping the publishing")
-									return
-								}
-							}
-						}()
-
-						peerAddrChan = hole.ConnectionPeer.GetPeerAddr()
-					}
 
 				case string(message.message) == pingMsg:
 					hole.ConnectionPeer.Logger.Debug.Println("Received ping from", hole.ConnectionPeer.PeerAddr)
@@ -232,12 +197,7 @@ func (hole *UPnPGID) Start() {
 				hole.ConnectionPeer.LastKeepalive = time.Now()
 
 			case <-keepalive:
-				// Keep NAT binding alive using STUN server or the peer once it's known
-				if hole.ConnectionPeer.PeerAddr == nil {
-					err = util.SendBindingRequest(hole.ConnectionPeer.LocalPeerConn, stunAddr)
-				} else {
-					err = util.UdpSendStr(keepaliveMsg, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
-				}
+				err = util.UdpSendStr(keepaliveMsg, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
 
 				if err != nil {
 					hole.ConnectionPeer.Logger.Error.Println("keepalive:", err)
@@ -251,7 +211,7 @@ func (hole *UPnPGID) Start() {
 			return true
 		}()
 		if !res {
-			return
+			return errors.New("Failed upnpgid")
 		}
 	}
 }

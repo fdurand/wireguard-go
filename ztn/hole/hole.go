@@ -45,7 +45,7 @@ type ExternalConnection struct {
 
 // Method interface
 type Method interface {
-	Start()
+	Start() error
 	GetPrivateAddr() string
 }
 
