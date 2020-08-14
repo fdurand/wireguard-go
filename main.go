@@ -8,9 +8,11 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+
 	"log"
 	"os"
 	"os/signal"
@@ -24,7 +26,7 @@ import (
 	"github.com/fdurand/wireguard-go/ipc"
 	"github.com/fdurand/wireguard-go/tun"
 	"github.com/fdurand/wireguard-go/ztn/api"
-	"github.com/fdurand/wireguard-go/ztn/peerconnection"
+	"github.com/fdurand/wireguard-go/ztn/hole"
 	"github.com/fdurand/wireguard-go/ztn/profile"
 	"github.com/inverse-inc/packetfence/go/remoteclients"
 	"github.com/inverse-inc/packetfence/go/sharedutils"
@@ -47,6 +49,8 @@ const (
 var ENV_ID = sharedutils.EnvOrDefault("ID", "")
 
 var logger *device.Logger
+
+var ctx = context.Background()
 
 func printUsage() {
 	fmt.Printf("usage:\n")
@@ -348,7 +352,7 @@ func getKeys() ([32]byte, [32]byte) {
 }
 
 func listenEvents(device *device.Device, profile profile.Profile) {
-	chal, err := ztn.GetServerChallenge(&profile)
+	chal, err := profile.GetServerChallenge(&profile)
 	sharedutils.CheckError(err)
 	priv, err := remoteclients.B64KeyToBytes(profile.PrivateKey)
 	sharedutils.CheckError(err)
@@ -373,13 +377,13 @@ func listenEvents(device *device.Device, profile profile.Profile) {
 	}
 }
 
-func startPeer(device *device.Device, profile profile.Profile, peerID string) {
-	peerProfile, err := ztn.GetPeerProfile(peerID)
+func startPeer(device *device.Device, prof profile.Profile, peerID string) {
+	peerProfile, err := prof.GetPeerProfile(peerID)
 	if err != nil {
 		logger.Error.Println("Unable to fetch profile for peer", peerID, ". Error:", err)
 		logger.Error.Println(debug.Stack())
 	} else {
-		go func(peerID string, peerProfile ztn.PeerProfile) {
+		go func(peerID string, peerProfile profile.PeerProfile) {
 			for {
 				func() {
 					defer func() {
@@ -387,8 +391,9 @@ func startPeer(device *device.Device, profile profile.Profile, peerID string) {
 							logger.Error.Println("Recovered error", r, "while handling peer", peerProfile.PublicKey, ". Will attempt to connect to it again.")
 						}
 					}()
-					pc := peerconnection.NewPeerConnection(device, logger, profile, peerProfile)
-					pc.Start()
+					methodType := "stun"
+					method, _ := hole.Create(ctx, methodType, device, logger, prof, peerProfile)
+					method.Start()
 				}()
 			}
 		}(peerID, peerProfile)
