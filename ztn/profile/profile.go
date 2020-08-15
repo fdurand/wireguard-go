@@ -109,9 +109,9 @@ func (p *Profile) GetPeerProfile(id string) (PeerProfile, error) {
 	var peer PeerProfile
 	err := api.GetAPIClient().Call(api.APIClientCtx, "GET", "/api/v1/remote_clients/peer/"+id, &peer)
 
-	pkey, err := base64.URLEncoding.DecodeString(p.PublicKey)
+	pkey, err := base64.URLEncoding.DecodeString(peer.PublicKey)
 	sharedutils.CheckError(err)
-	peer.PublicKey = base64.StdEncoding.EncodeToString(pkey)
+	p.PublicKey = base64.StdEncoding.EncodeToString(pkey)
 
 	return peer, err
 }
