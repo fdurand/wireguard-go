@@ -80,8 +80,8 @@ func (hole *UPnPGID) GetExternalInfo() error {
 	if err != nil {
 		return err
 	}
-	hole.ConnectionPeer.MyAddr.IP = myExternalIP
-	hole.ConnectionPeer.MyAddr.Port = remotePort
+	MyUDP := &net.UDPAddr{IP: myExternalIP, Port: remotePort}
+	hole.ConnectionPeer.MyAddr = MyUDP
 	err = hole.AddPortMapping(localPort, remotePort)
 	if err != nil {
 		return errors.New("Fail to add the port mapping")

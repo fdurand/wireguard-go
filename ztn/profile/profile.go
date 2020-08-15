@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os/exec"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/fdurand/wireguard-go/device"
 	"github.com/fdurand/wireguard-go/ztn/api"
 	"github.com/fdurand/wireguard-go/ztn/config"
@@ -109,7 +108,7 @@ type PeerProfile struct {
 func (p *Profile) GetPeerProfile(id string) (PeerProfile, error) {
 	var peer PeerProfile
 	err := api.GetAPIClient().Call(api.APIClientCtx, "GET", "/api/v1/remote_clients/peer/"+id, &peer)
-	spew.Dump(peer)
+
 	pkey, err := base64.URLEncoding.DecodeString(peer.PublicKey)
 	sharedutils.CheckError(err)
 	p.PublicKey = base64.StdEncoding.EncodeToString(pkey)
