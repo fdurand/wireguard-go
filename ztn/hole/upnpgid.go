@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"strings"
-	"time"
 
 	"github.com/fdurand/wireguard-go/device"
 	"github.com/fdurand/wireguard-go/ztn/api"
@@ -109,13 +108,6 @@ func (hole *UPnPGID) Start() error {
 	var err error
 	err = hole.GetExternalInfo()
 
-	// if err != nil {
-	// 	return err
-	// }
-
-	// hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
-	// sharedutils.CheckError(err)
-
 	hole.ConnectionPeer.LocalPeerConn, err = net.ListenUDP(udp, nil)
 	sharedutils.CheckError(err)
 
@@ -123,10 +115,8 @@ func (hole *UPnPGID) Start() error {
 
 	messageChan := make(chan *pkt)
 	hole.ConnectionPeer.Listen(hole.ConnectionPeer.LocalPeerConn, messageChan)
-	// hole.ConnectionPeer.Listen(hole.ConnectionPeer.WgConn, messageChan)
+
 	var peerAddrChan <-chan string
-	keepalive := time.Tick(500 * time.Millisecond)
-	keepaliveMsg := pingMsg
 
 	foundPeer := make(chan bool)
 
@@ -146,30 +136,6 @@ func (hole *UPnPGID) Start() error {
 			}()
 
 			select {
-			// case message, ok = <-messageChan:
-			// 	if !ok {
-			// 		return false
-			// 	}
-
-			// 	switch {
-
-			// 	case string(message.message) == pingMsg:
-			// 		hole.ConnectionPeer.Logger.Debug.Println("Received ping from", hole.ConnectionPeer.PeerAddr)
-			// 		hole.ConnectionPeer.LastKeepalive = time.Now()
-			// 		hole.ConnectionPeer.Connected = true
-
-			// 	default:
-			// 		if message.raddr.String() == localWGAddr {
-			// 			n := len(message.message)
-			// 			hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.PeerAddr, n)
-			// 			util.UdpSend(message.message, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
-			// 		} else {
-			// 			n := len(message.message)
-			// 			hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.WgConn.RemoteAddr(), n)
-			// 			hole.ConnectionPeer.WgConn.Write(message.message)
-			// 		}
-
-			// 	}
 
 			case peerStr := <-peerAddrChan:
 				if hole.ConnectionPeer.ShouldTryPrivate() {
@@ -194,19 +160,6 @@ func (hole *UPnPGID) Start() error {
 				hole.ConnectionPeer.Started = true
 				hole.ConnectionPeer.TriedPrivate = true
 				foundPeer <- true
-				hole.ConnectionPeer.LastKeepalive = time.Now()
-
-			case <-keepalive:
-				err = util.UdpSendStr(keepaliveMsg, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
-
-				if err != nil {
-					hole.ConnectionPeer.Logger.Error.Println("keepalive:", err)
-				}
-
-				if hole.ConnectionPeer.Started && hole.ConnectionPeer.LastKeepalive.Before(time.Now().Add(-5*time.Second)) {
-					hole.ConnectionPeer.Logger.Error.Println("No packet or keepalive received for too long. Connection to", hole.ConnectionPeer.PeerID, "is dead")
-					return false
-				}
 			}
 			return true
 		}()
