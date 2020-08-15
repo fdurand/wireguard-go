@@ -22,8 +22,8 @@ import (
 
 var mapping = new(upnp.Upnp)
 
-var localPort = 1990
-var remotePort = 1990
+var localPort = constants.LocalWGPort
+var remotePort = constants.LocalWGPort
 
 // UPnPGID struct
 type UPnPGID struct {
@@ -109,12 +109,12 @@ func (hole *UPnPGID) Start() error {
 	var err error
 	err = hole.GetExternalInfo()
 
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
-	sharedutils.CheckError(err)
+	// hole.ConnectionPeer.WgConn, err = net.DialUDP("udp4", nil, &net.UDPAddr{IP: constants.LocalWGIP, Port: constants.LocalWGPort})
+	// sharedutils.CheckError(err)
 
 	hole.ConnectionPeer.LocalPeerConn, err = net.ListenUDP(udp, nil)
 	sharedutils.CheckError(err)
@@ -123,7 +123,7 @@ func (hole *UPnPGID) Start() error {
 
 	messageChan := make(chan *pkt)
 	hole.ConnectionPeer.Listen(hole.ConnectionPeer.LocalPeerConn, messageChan)
-	hole.ConnectionPeer.Listen(hole.ConnectionPeer.WgConn, messageChan)
+	// hole.ConnectionPeer.Listen(hole.ConnectionPeer.WgConn, messageChan)
 	var peerAddrChan <-chan string
 	keepalive := time.Tick(500 * time.Millisecond)
 	keepaliveMsg := pingMsg
@@ -132,12 +132,12 @@ func (hole *UPnPGID) Start() error {
 
 	a := strings.Split(hole.ConnectionPeer.LocalPeerConn.LocalAddr().String(), ":")
 	var localPeerAddr = fmt.Sprintf("%s:%s", constants.LocalWGIP.String(), a[len(a)-1])
-	var localWGAddr = fmt.Sprintf("%s:%d", constants.LocalWGIP.String(), constants.LocalWGPort)
+	// var localWGAddr = fmt.Sprintf("%s:%d", constants.LocalWGIP.String(), constants.LocalWGPort)
 
 	for {
 		res := func() bool {
 			var message *pkt
-			var ok bool
+			// var ok bool
 
 			defer func() {
 				if message != nil {
@@ -146,30 +146,30 @@ func (hole *UPnPGID) Start() error {
 			}()
 
 			select {
-			case message, ok = <-messageChan:
-				if !ok {
-					return false
-				}
+			// case message, ok = <-messageChan:
+			// 	if !ok {
+			// 		return false
+			// 	}
 
-				switch {
+			// 	switch {
 
-				case string(message.message) == pingMsg:
-					hole.ConnectionPeer.Logger.Debug.Println("Received ping from", hole.ConnectionPeer.PeerAddr)
-					hole.ConnectionPeer.LastKeepalive = time.Now()
-					hole.ConnectionPeer.Connected = true
+			// 	case string(message.message) == pingMsg:
+			// 		hole.ConnectionPeer.Logger.Debug.Println("Received ping from", hole.ConnectionPeer.PeerAddr)
+			// 		hole.ConnectionPeer.LastKeepalive = time.Now()
+			// 		hole.ConnectionPeer.Connected = true
 
-				default:
-					if message.raddr.String() == localWGAddr {
-						n := len(message.message)
-						hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.PeerAddr, n)
-						util.UdpSend(message.message, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
-					} else {
-						n := len(message.message)
-						hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.WgConn.RemoteAddr(), n)
-						hole.ConnectionPeer.WgConn.Write(message.message)
-					}
+			// 	default:
+			// 		if message.raddr.String() == localWGAddr {
+			// 			n := len(message.message)
+			// 			hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.PeerAddr, n)
+			// 			util.UdpSend(message.message, hole.ConnectionPeer.LocalPeerConn, hole.ConnectionPeer.PeerAddr)
+			// 		} else {
+			// 			n := len(message.message)
+			// 			hole.ConnectionPeer.Logger.Debug.Printf("send to WG server: [%s]: %d bytes\n", hole.ConnectionPeer.WgConn.RemoteAddr(), n)
+			// 			hole.ConnectionPeer.WgConn.Write(message.message)
+			// 		}
 
-				}
+			// 	}
 
 			case peerStr := <-peerAddrChan:
 				if hole.ConnectionPeer.ShouldTryPrivate() {
