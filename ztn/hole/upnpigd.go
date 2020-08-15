@@ -24,8 +24,8 @@ var mapping = new(upnp.Upnp)
 var localPort = constants.LocalWGPort
 var remotePort = constants.LocalWGPort
 
-// UPnPGID struct
-type UPnPGID struct {
+// UPnPIGD struct
+type UPnPIGD struct {
 	ConnectionPeer *ExternalConnection
 }
 
@@ -45,15 +45,15 @@ func ExternalIPAddr() (net.IP, error) {
 
 }
 
-// NewUPnPGID Init
-func NewUPnPGID(ctx context.Context, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) (Method, error) {
-	method := UPnPGID{}
+// NewUPnPIGD Init
+func NewUPnPIGD(ctx context.Context, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) (Method, error) {
+	method := UPnPIGD{}
 	method.init(ctx, d, logger, myProfile, peerProfile)
 	return &method, nil
 }
 
 // Init initialyse
-func (hole *UPnPGID) init(context context.Context, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) {
+func (hole *UPnPIGD) init(context context.Context, d *device.Device, logger *device.Logger, myProfile profile.Profile, peerProfile profile.PeerProfile) {
 	log.SetProcessName("wireguard-go")
 	ctx := log.LoggerNewContext(context)
 	e := &ExternalConnection{
@@ -69,7 +69,7 @@ func (hole *UPnPGID) init(context context.Context, d *device.Device, logger *dev
 }
 
 // GetExternalInfo fetch wan information
-func (hole *UPnPGID) GetExternalInfo() error {
+func (hole *UPnPIGD) GetExternalInfo() error {
 	err := CheckNet()
 	if err != nil {
 		return errors.New("your router does not support the UPnP protocol.")
@@ -89,7 +89,7 @@ func (hole *UPnPGID) GetExternalInfo() error {
 }
 
 // AddPortMapping insert port mapping in the gateway
-func (hole *UPnPGID) AddPortMapping(localPort, remotePort int) error {
+func (hole *UPnPIGD) AddPortMapping(localPort, remotePort int) error {
 	if err := mapping.AddPortMapping(localPort, remotePort, 60, "UDP", "WireguardGO"); err == nil {
 		fmt.Println("Port mapped successfully")
 		hole.ConnectionPeer.Logger.Info.Print("Port mapped successfully")
@@ -104,7 +104,7 @@ func DelPortMapping(localPort, remotePort int) {
 }
 
 // Run execute the Method
-func (hole *UPnPGID) Start() error {
+func (hole *UPnPIGD) Start() error {
 	var err error
 	err = hole.GetExternalInfo()
 
@@ -164,11 +164,11 @@ func (hole *UPnPGID) Start() error {
 			return true
 		}()
 		if !res {
-			return errors.New("Failed upnpgid")
+			return errors.New("Failed upnpigd")
 		}
 	}
 }
 
-func (hole *UPnPGID) GetPrivateAddr() string {
+func (hole *UPnPIGD) GetPrivateAddr() string {
 	return "mysuperipzammit"
 }

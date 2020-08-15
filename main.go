@@ -392,7 +392,7 @@ func startPeer(device *device.Device, prof profile.Profile, peerID string) {
 						}
 					}()
 					// methodType := "stun"
-					methodType := "upnpgid"
+					methodType := "upnpigd"
 					method, _ := hole.Create(ctx, methodType, device, logger, prof, peerProfile)
 					method.Start()
 				}()
